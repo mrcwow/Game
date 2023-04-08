@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Рекорды</title>
+    <style>
+        body{
+            background-color: burlywood;
+        }
+        h1{
+            text-align:center;
+            color: darkblue;
+        }
+        canvas {
+            margin-left: auto;
+            margin-right: auto;
+            display: flex;
+            background: burlywood;
+            border: thick dashed darkblue;
+        }
+        button {
+            margin-left: auto;
+            margin-right: auto;
+            margin-top: 5px;
+            display: flex;
+            background: burlywood;
+            border: thick dashed darkblue;
+        }
+    </style>
+</head>
+
+<body>
+<h1><font face="Times New Roman">Рекорды</font></h1>
+<canvas id='records' width='320' height=610></canvas>
+<button id="back" onclick="window.open('main5.html', '_self')"><font color="#00008b">Назад</font></button>
+
+</body>
+<script>
+    const canvas = document.getElementById('records');
+    const ctx = canvas.getContext('2d');
+
+    function clear_window(){
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+
+    function show_records() {
+        clear_window();
+        let records = []
+        records = localStorage;
+        //console.log(records);
+        let records_dict = Object.keys(records).map((key) => {
+            return [key, records[key]];
+        });
+        records_dict.sort((a_el, b_el) => {
+            return b_el[1] - a_el[1];
+        });
+        ctx.font = '14px Arial';
+        ctx.fillStyle = "darkblue";
+        let i_sh = 0;
+        for (let i_s = 0; i_s < records_dict.length; i_s++) {
+            if (records_dict[i_s][0] !== "game.username") {
+                ctx.fillText(records_dict[i_s][0] + ' ' + records_dict[i_s][1] + ' ' + 'очков', 15, 15 * (i_sh + 1));
+                i_sh += 1;
+            }
+        }
+    }
+
+    show_records();
+</script>
+</html>
