@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Игра</title>
+
+  <script src="mapManager.js"></script>
+  <script src="spriteManager.js"></script>
+  <script src="eventsManager.js"></script>
+  <script src="physicManager.js"></script>
+  <script src="gameManager.js"></script>
+  <script src="soundManager.js"></script>
+
+  <style>
+    body {
+      background-color: burlywood;
+    }
+  </style>
+</head>
+
+<body>
+<canvas id="canvasId" width="704" height="704"></canvas>
+<canvas id='score' width='270' height='100'></canvas>
+
+<script>
+  let canvas = document.getElementById("canvasId");
+  let ctx = canvas.getContext("2d");
+  const score = document.getElementById('score');
+  const ctx2 = score.getContext('2d');
+  ctx2.font = 'bold 18px Arial';
+  ctx2.fillStyle = "darkblue";
+
+  class Entity {
+    constructor() {
+      this.pos_x = 0;
+      this.pos_y = 0;
+      this.size_x = 0;
+      this.size_y = 0;
+    }
+  }
+
+  class Player extends Entity {
+    constructor() {
+      super();
+      this.lifetime = 100;
+      this.move_x = 0;
+      this.move_y = 0;
+      this.speed = 10;
+    }
+    draw (ctx) {
+      spriteManager.drawSprite(ctx, "player.png", this.pos_x, this.pos_y);
+    }
+    update () {
+      physicManager.update(this)
+    }
+    onTouchEntity (obj) {
+      if (obj.name.match(/star[\d]/)) {
+        this.lifetime += 50;
+        obj.kill();
+      }
+    }
+    kill () {
+      console.log("yes");
+      soundManager.play('effects/gameover.mp3');
+      gameManager.game_over = true;
+    }
+    fire () {
+      let r = new gameManager.factory["Rocket"]();
+      r.size_x = 32;
+      r.size_y = 32;
+      r.name = "rocket" + (++gameManager.fireNum);
+      r.move_x = this.move_x;
+      r.move_y = this.move_y;
+      switch (this.move_x + 2 * this.move_y) {
+        case -1:
+          r.pos_x = this.pos_x - r.size_x;
+          r.pos_y = this.pos_y;
+          break;
+        case 1:
+          r.pos_x = this.pos_x + r.size_x;
+          r.pos_y = this.pos_y;
+          break;
+        case -2:
+          r.pos_x = this.pos_x;
+          r.pos_y = this.pos_y - r.size_y;
+          break;
+        case 2:
+          r.pos_x = this.pos_x;
+          r.pos_y = this.pos_y + r.size_y;
+          break;
+        default: return;
+      }
+      soundManager.play('effects/shot.mp3');
+      gameManager.entities.push(r);
+    }
+  }
+
+  class Boxer extends Entity {
+    constructor() {
+      super();
+      this.lifetime = 100;
+      this.move_x = 0;
+      this.move_y = 0;
+      this.speed = 5;
+    }
+    draw (ctx) {
+      spriteManager.drawSprite(ctx, "boxer.png", this.pos_x, this.pos_y);
+    }
+    update () {
+      if (gameManager.player.pos_x > this.pos_x) this.move_x = 1;
+      else this.move_x = -1
+      if (gameManager.player.pos_y > this.pos_y) this.move_y = 1;
+      else this.move_y = -1;
+      physicManager.update(this);
+    }
+    onTouchEntity (obj) {
+      if (obj.name.match(/player/)) {
+        soundManager.play('effects/boxer.mp3');
+        if (obj.lifetime > 0) {
+          obj.lifetime -= 10;
+        }
+        if (obj.lifetime <= 0) {
+          obj.kill();
+        }
+      }
+    }
+    kill () {
+      soundManager.play('effects/killenemy.mp3', {volume: 0.5});
+      gameManager.kill(this);
+      gameManager.num_enemies -= 1;
+      gameManager.score += 100;
+    }
+  }
+
+  class Rocket extends Entity {
+    constructor() {
+      super();
+      this.move_x = 0;
+      this.move_y = 0;
+      this.speed = 10;
+    }
+    draw (ctx) {
+      spriteManager.drawSprite(ctx, "rocket3.png", this.pos_x, this.pos_y);
+    }
+    update () {
+      physicManager.update(this);
+    }
+    onTouchEntity (obj) {
+      //console.log(this.name + " yes touch " + obj.name);
+      if (obj.name.match(/enemy[\d*]/) || obj.name.match(/player/) || obj.name.match(/rocket[\d*]/)) {
+        obj.kill();
+      }
+      this.kill();
+    }
+    onTouchMap (idx) {
+      this.kill();
+      soundManager.playWorldSound('effects/boom.mp3', this.pos_x, this.pos_y);
+    }
+    kill () {
+      gameManager.kill(this);
+    }
+  }
+
+  class Bonus extends Entity {
+    draw (ctx) {
+      spriteManager.drawSprite(ctx, "star.png", this.pos_x, this.pos_y);
+    }
+    kill () {
+      soundManager.play('effects/takebonus.mp3');
+      gameManager.kill(this);
+      gameManager.score -= 50;
+    }
+  }
+
+  let soundarray = ['effects/boom.mp3', 'effects/boxer.mp3', 'effects/gameover.mp3', 'effects/killenemy.mp3',
+    'effects/newlevel.mp3', 'effects/shot.mp3', 'effects/takebonus.mp3', 'effects/victory.mp3'];
+  soundManager.init();
+  soundManager.loadArray(soundarray);
+
+  let map1 = "map/tilemap.tmj";
+  gameManager.loadAll(map1);
+
+  gameManager.play();
+</script>
+</body>
+</html>
