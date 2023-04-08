@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ввод пользователя</title>
+  <style>
+    body{
+      background-color: burlywood;
+    }
+    h1{
+      text-align:center;
+      color: darkblue;
+    }
+    form{
+      text-align:center;
+    }
+    input[type=submit] {
+      color: darkblue;
+      background-color: bisque;
+      border: thin solid darkblue;
+      border-radius: 5px;
+    }
+    .label input {
+      color: darkblue;
+      background-color: bisque;
+      border: thin solid darkblue;
+      border-radius: 5px;
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+<h1><font size="7" face="Times New Roman">Игра</font></h1>
+</body>
+<form action="main5.html" method="get">
+  <label class="label">
+    <font size=5 face="Times New Roman" color="#00008b">Введите имя:</font><br>
+    <input placeholder="Имя пользователя"><br>
+  </label>
+  <input type="submit" value="Ввод" onclick="store(document.querySelector('input'))">
+</form>
+<script>
+  function store(source) {
+    localStorage["game.username"] = source.value;
+  }
+</script>
+</html>
